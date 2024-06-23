@@ -17,12 +17,39 @@ def Article_list_create_api_view(request):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data,status=status.HTTP_201_CREATED)
-        else:
-            return Response(data=None,status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-def GetArticle(request,articleid):
-    article = Article.objects.filter(pk=articleid)
-    serializer = ArticleSerializer(article)
-    return Response(serializer.data)
+@api_view(['GET','PUT','DELETE'])
+def article_detail_api_view(request,pk):
+    try:
+        article_instace = Article.objects.get(pk=pk)       
+    except:
+        return Response(
+            {'errors':{
+                "code":404,
+                "message":f"Can not found this article with pk= {pk}"
+                }
             
+            },
+            status= status.HTTP_404_NOT_FOUND
+            )        
+    if request.method == 'GET':
+        serializer = ArticleSerializer(article_instace)
+        return Response(serializer.data)
+    elif request.method=='PUT':
+        serializer = ArticleSerializer(article_instace,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    elif request.method=='DELETE':
+        article_instace.delete()
+        return Response(
+             { 'errors':{
+                "code":204,
+                "message":f"Deleted this article with pk= {pk}"
+                }
+            
+            },
+            status= status.HTTP_204_NO_CONTENT
+        )
