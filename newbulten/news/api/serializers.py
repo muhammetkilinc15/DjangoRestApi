@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from news.models import Article
-
+ 
 # Makale Serializer 
 class ArticleSerializer(serializers.Serializer):
     id= serializers.IntegerField(read_only=True)  # Otomatik olarak atanacak, sadece okunabilir bir alan
@@ -29,3 +29,14 @@ class ArticleSerializer(serializers.Serializer):
         instance.isActive = validated_data.get('isActive', instance.isActive)
         instance.save()
         return instance
+
+def validate(self,data):
+   
+    raise serializers.ValidationError('Title and description can not be same')
+    return data
+
+def validate_title(self,value):
+    if len(value) < 20:
+        raise serializers.ValidationError('Title space must minumum 20 character')
+
+    return value
